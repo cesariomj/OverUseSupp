@@ -10,94 +10,111 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
         
-        .ingredient-tag {
-            display: inline-flex;
-            align-items: center;
-            background: #f1f5f9;
-            padding: 6px 14px;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            margin: 3px;
-            transition: all 0.2s;
-        }
-        .overlap-tag {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
+        .ingredient-tag { padding: 6px 14px; border-radius: 9999px; font-size: 0.875rem; margin: 3px; transition: all 0.2s; }
+        .overlap-tag { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .warning { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+        .danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; animation: pulse 2s infinite; }
+        
         .modal { animation: fadeIn 0.2s ease; }
         .dose { font-size: 0.8rem; color: #64748b; margin-left: 6px; }
         .total-dose { font-weight: 600; color: #b91c1c; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
+        .dark body { background-color: #0f172a; }
+        .dark .bg-white { background-color: #1e2937 !important; }
+        .dark .ingredient-tag { background: #334155; color: #e2e8f0; }
+        .dark .overlap-tag { background: #7f1d1d; color: #fecaca; }
+        .dark .warning { background: #78350f; color: #fcd34d; }
+        .dark .danger { background: #991b1b; color: #fecaca; }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
     <div class="max-w-7xl mx-auto min-h-screen flex flex-col">
-        <!-- Navbar (unchanged) -->
-        <nav class="bg-white border-b sticky top-0 z-50 shadow-sm">
-            <div class="px-8 py-5 flex items-center justify-between">
+        
+        <!-- Navbar -->
+        <nav class="bg-white border-b sticky top-0 z-50 shadow-sm dark:bg-slate-900 dark:border-slate-700">
+            <div class="px-6 py-5 flex items-center justify-between">
                 <div class="flex items-center gap-x-3">
                     <div class="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl">💊</div>
                     <div>
-                        <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Supplement Overlap</h1>
-                        <p class="text-xs text-emerald-600 -mt-1">Track ingredients + dosages • Avoid over-supplementing</p>
+                        <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">Supplement Overlap</h1>
+                        <p class="text-xs text-emerald-600 dark:text-emerald-400 -mt-1">Track + Safety Warnings</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-x-3">
-                    <div onclick="showTab(1)" class="hidden md:flex items-center gap-x-2 px-4 py-2 bg-white border rounded-3xl text-sm font-medium cursor-pointer hover:bg-slate-50">
-                        <i class="fa-solid fa-capsules text-emerald-500"></i>
-                        <span id="nav-bottle-count">0 bottles</span>
-                    </div>
-                    <div onclick="showTab(2)" class="hidden md:flex items-center gap-x-2 px-4 py-2 bg-white border rounded-3xl text-sm font-medium cursor-pointer hover:bg-slate-50">
-                        <i class="fa-solid fa-exclamation-triangle text-amber-500"></i>
-                        <span id="nav-overlap-count">0 overlaps</span>
-                    </div>
-                    
-                    <button onclick="exportData()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border transition-colors">
-                        <i class="fa-solid fa-download"></i><span class="hidden sm:inline">Export</span>
+                
+                <div class="flex items-center gap-x-4">
+                    <button onclick="toggleTheme()" class="w-11 h-11 flex items-center justify-center text-2xl rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span id="theme-icon">☀️</span>
                     </button>
-                    <label onclick="document.getElementById('import-input').click()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border transition-colors cursor-pointer">
+
+                    <button onclick="exportCSV()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border dark:text-slate-300 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-file-csv"></i><span class="hidden sm:inline">CSV</span>
+                    </button>
+                    <button onclick="exportData()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border dark:text-slate-300 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-download"></i><span class="hidden sm:inline">JSON</span>
+                    </button>
+                    
+                    <label onclick="document.getElementById('import-input').click()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border cursor-pointer dark:text-slate-300 dark:hover:bg-slate-800">
                         <i class="fa-solid fa-upload"></i><span class="hidden sm:inline">Import</span>
                     </label>
                     <input type="file" id="import-input" accept=".json" class="hidden" onchange="importData(event)">
                     
-                    <button onclick="clearAllData()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-3xl border border-red-200 transition-colors">
+                    <button onclick="clearAllData()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-3xl border border-red-200 dark:text-red-400 dark:hover:bg-red-950">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
             </div>
         </nav>
 
+        <!-- Search Bar -->
+        <div class="bg-white dark:bg-slate-900 border-b px-8 py-4 sticky top-[73px] z-40">
+            <div class="max-w-2xl mx-auto relative">
+                <input id="search-input" onkeyup="filterContent()" type="text" 
+                       class="w-full px-6 py-4 pl-12 border border-slate-200 dark:border-slate-700 rounded-3xl focus:border-emerald-400 outline-none text-lg"
+                       placeholder="Search bottles or ingredients...">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            </div>
+        </div>
+
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
-            <div class="w-80 bg-white border-r flex flex-col">
-                <div class="p-6 border-b flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-slate-800">My Bottles</h2>
-                    <button onclick="showAddModal()" class="w-9 h-9 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center justify-center text-xl transition-colors">
+            <div id="sidebar" class="w-80 bg-white border-r flex flex-col dark:bg-slate-900 dark:border-slate-700 md:block hidden">
+                <div class="p-6 border-b dark:border-slate-700 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-800 dark:text-white">My Bottles</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Sorted alphabetically</p>
+                    </div>
+                    <button onclick="showAddModal()" class="w-9 h-9 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center justify-center text-xl">
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
                 <div id="sidebar-bottles" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
-                <div id="sidebar-empty" class="flex-1 flex flex-col items-center justify-center text-center px-8 hidden">
-                    <i class="fa-solid fa-capsules text-6xl text-slate-300 mb-6"></i>
-                    <p class="text-slate-500 font-medium">No supplements yet</p>
+                <div id="sidebar-empty" class="hidden flex-1 flex flex-col items-center justify-center text-center px-8">
+                    <i class="fa-solid fa-capsules text-6xl text-slate-300 dark:text-slate-600 mb-6"></i>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">No supplements yet</p>
                     <button onclick="showAddModal()" class="mt-6 px-6 py-3 bg-emerald-600 text-white rounded-3xl text-sm font-medium">+ Add First Bottle</button>
                 </div>
             </div>
             
             <!-- Main Content -->
-            <div class="flex-1 p-8 overflow-y-auto">
+            <div class="flex-1 p-6 md:p-8 overflow-y-auto">
                 <div class="mb-12">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-semibold flex items-center gap-x-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                        <h2 class="text-2xl font-semibold flex items-center gap-x-3 text-slate-900 dark:text-white">
                             <i class="fa-solid fa-exclamation-triangle text-amber-500"></i>
                             Overlapping Ingredients
                         </h2>
-                        <span id="overlap-summary" class="text-sm font-medium bg-amber-100 text-amber-700 px-4 py-1 rounded-3xl"></span>
+                        <button onclick="showLimitsModal()" 
+                                class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium bg-white border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-3xl">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Manage Safety Limits</span>
+                        </button>
                     </div>
                     <div id="overlaps-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
                 </div>
 
-                <h2 class="text-2xl font-semibold mb-6 flex items-center gap-x-3">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center gap-x-3 text-slate-900 dark:text-white">
                     <i class="fa-solid fa-list-check"></i> Your Collection
                 </h2>
                 <div id="bottles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -105,29 +122,44 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Add/Edit Bottle Modal -->
     <div id="modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-        <div class="modal bg-white rounded-3xl max-w-lg w-full mx-4 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="modal bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full mx-4 shadow-2xl">
             <div class="px-8 pt-8 pb-6">
-                <h3 id="modal-title" class="text-2xl font-semibold text-slate-900">Add New Supplement Bottle</h3>
+                <h3 id="modal-title" class="text-2xl font-semibold text-slate-900 dark:text-white">Add New Supplement Bottle</h3>
                 <div class="mt-8 space-y-8">
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-2">Bottle / Product Name</label>
-                        <input id="name-input" type="text" class="w-full px-5 py-4 border border-slate-200 focus:border-emerald-400 rounded-3xl text-lg outline-none" placeholder="e.g. Nature Made Vitamin D3">
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Bottle / Product Name</label>
+                        <input id="name-input" type="text" class="w-full px-5 py-4 border border-slate-200 dark:border-slate-700 focus:border-emerald-400 rounded-3xl text-lg outline-none bg-white dark:bg-slate-700 dark:text-white" placeholder="e.g. Nature Made Vitamin D3">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-2">Ingredients & Dosage (one per line)</label>
-                        <textarea id="ingredients-input" rows="10" class="w-full px-5 py-4 border border-slate-200 focus:border-emerald-400 rounded-3xl resize-none outline-none font-light" placeholder="Vitamin D 100 mcg&#10;Vitamin D 300 mcg&#10;Magnesium 400 mg"></textarea>
-                        <p class="mt-3 text-xs text-slate-400 flex items-center gap-x-1">
-                            <i class="fa-solid fa-lightbulb"></i>
-                            Examples: "Vitamin D 100 mcg" or "Magnesium Glycinate 400 mg"
-                        </p>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Ingredients & Dosage (one per line)</label>
+                        <textarea id="ingredients-input" rows="10" class="w-full px-5 py-4 border border-slate-200 dark:border-slate-700 focus:border-emerald-400 rounded-3xl resize-none outline-none bg-white dark:bg-slate-700 dark:text-white" placeholder="Vitamin B6 14 mg&#10;Vitamin D3 2000 IU&#10;Magnesium 400 mg"></textarea>
                     </div>
                 </div>
             </div>
-            <div class="border-t px-8 py-6 flex gap-4 mt-auto">
-                <button onclick="hideModal()" class="flex-1 py-4 text-slate-600 font-medium rounded-3xl hover:bg-slate-100 transition-colors">Cancel</button>
-                <button onclick="saveBottle()" id="save-btn" class="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-3xl transition-colors">Save Bottle</button>
+            <div class="border-t dark:border-slate-700 px-8 py-6 flex gap-4">
+                <button onclick="hideModal()" class="flex-1 py-4 text-slate-600 dark:text-slate-400 font-medium rounded-3xl hover:bg-slate-100 dark:hover:bg-slate-700">Cancel</button>
+                <button onclick="saveBottle()" id="save-btn" class="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-3xl">Save Bottle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Safety Limits Modal with Units -->
+    <div id="limits-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full mx-4 shadow-2xl max-h-[85vh] flex flex-col">
+            <div class="px-8 pt-8 pb-4 border-b dark:border-slate-700">
+                <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">Manage Safety Limits</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Set upper daily limits with matching units (mg, mcg, IU, etc.)
+                </p>
+            </div>
+            
+            <div id="limits-list" class="flex-1 overflow-y-auto p-8 space-y-6"></div>
+            
+            <div class="p-8 border-t dark:border-slate-700 flex gap-3">
+                <button onclick="addNewLimit()" class="flex-1 py-3 border border-slate-300 dark:border-slate-600 rounded-3xl hover:bg-slate-50 dark:hover:bg-slate-700">+ Add New Limit</button>
+                <button onclick="hideLimitsModal()" class="flex-1 py-3 bg-emerald-600 text-white rounded-3xl hover:bg-emerald-700">Done</button>
             </div>
         </div>
     </div>
@@ -135,16 +167,67 @@
     <script>
         let bottles = []
         let editingId = null
-        const STORAGE_KEY = 'supplement-overlap-data-v3'  // bumped version
+        let upperLimits = {}   // format: { "vitamin b6": {limit: 100, unit: "mg"} }
+
+        const STORAGE_KEY = 'supplement-overlap-data-v9'
+        const LIMITS_KEY = 'supplement-upper-limits-v2'
+
+        const DEFAULT_LIMITS = {
+            "vitamin d": {limit: 4000, unit: "IU"},
+            "vitamin d3": {limit: 4000, unit: "IU"},
+            "magnesium": {limit: 350, unit: "mg"},
+            "zinc": {limit: 40, unit: "mg"},
+            "vitamin c": {limit: 2000, unit: "mg"},
+            "calcium": {limit: 2500, unit: "mg"},
+            "vitamin a": {limit: 3000, unit: "IU"},
+            "iron": {limit: 45, unit: "mg"},
+            "vitamin e": {limit: 1000, unit: "IU"},
+            "selenium": {limit: 400, unit: "mcg"},
+            "vitamin b6": {limit: 100, unit: "mg"},
+            "vitamin b12": {limit: 2000, unit: "mcg"}
+        }
 
         function loadData() {
             const saved = localStorage.getItem(STORAGE_KEY)
             bottles = saved ? JSON.parse(saved) : []
-            renderEverything()
+            const savedLimits = localStorage.getItem(LIMITS_KEY)
+            upperLimits = savedLimits ? JSON.parse(savedLimits) : {...DEFAULT_LIMITS}
         }
 
         function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(bottles)) }
-        function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2) }
+        function saveLimits() { localStorage.setItem(LIMITS_KEY, JSON.stringify(upperLimits)) }
+
+        function getUpperLimit(name) {
+            const entry = upperLimits[name.toLowerCase().trim()]
+            return entry ? entry.limit : null
+        }
+
+        function getUpperUnit(name) {
+            const entry = upperLimits[name.toLowerCase().trim()]
+            return entry ? entry.unit : ""
+        }
+
+        function parseIngredientLine(line) {
+            const trimmed = line.trim()
+            if (!trimmed) return null
+
+            const numbers = trimmed.match(/[\d.,]+/g)
+            if (!numbers || numbers.length === 0) {
+                return { name: trimmed, dose: null, numeric: null }
+            }
+
+            const doseStr = numbers[numbers.length - 1]
+            const numeric = parseFloat(doseStr.replace(/,/g, ''))
+
+            let name = trimmed.replace(new RegExp(doseStr + '\\s*[^\\s]*$', 'i'), '').trim()
+            if (name === '') name = trimmed.replace(doseStr, '').trim()
+
+            return {
+                name: name,
+                dose: trimmed.replace(name, '').trim(),
+                numeric: isNaN(numeric) ? null : numeric
+            }
+        }
 
         function showAddModal() {
             editingId = null
@@ -153,7 +236,6 @@
             document.getElementById('ingredients-input').value = ''
             document.getElementById('save-btn').textContent = 'Add Bottle'
             document.getElementById('modal').classList.remove('hidden')
-            document.getElementById('name-input').focus()
         }
 
         function hideModal() {
@@ -161,43 +243,14 @@
             editingId = null
         }
 
-        // Improved parsing - more reliable numeric extraction
-        function parseIngredientLine(line) {
-            const trimmed = line.trim()
-            if (!trimmed) return null
-
-            // Extract the first number found in the string
-            const numMatch = trimmed.match(/[\d.,]+/)
-            let numeric = null
-            if (numMatch) {
-                numeric = parseFloat(numMatch[0].replace(/,/g, ''))
-            }
-
-            // Try to separate name and dose
-            const doseMatch = trimmed.match(/^(.+?)\s+([\d.,]+)\s*([a-zA-Zµμ%].*)?$/i)
-            if (doseMatch) {
-                return {
-                    name: doseMatch[1].trim(),
-                    dose: `${doseMatch[2]}${doseMatch[3] ? ' ' + doseMatch[3].trim() : ''}`,
-                    numeric: numeric
-                }
-            }
-
-            return {
-                name: trimmed,
-                dose: null,
-                numeric: numeric
-            }
-        }
-
         function saveBottle() {
             const name = document.getElementById('name-input').value.trim()
-            const text = document.getElementById('ingredients-input').value
-
             if (!name) return alert('Please enter a bottle name')
 
-            const lines = text.split('\n')
-            const ingredients = lines.map(parseIngredientLine).filter(i => i)
+            const ingredients = document.getElementById('ingredients-input').value
+                .split('\n')
+                .map(parseIngredientLine)
+                .filter(i => i)
 
             if (ingredients.length === 0) return alert('Please add at least one ingredient')
 
@@ -208,7 +261,11 @@
                     bottle.ingredients = ingredients
                 }
             } else {
-                bottles.push({ id: generateId(), name: name, ingredients: ingredients })
+                bottles.push({ 
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2), 
+                    name, 
+                    ingredients 
+                })
             }
 
             saveData()
@@ -222,11 +279,9 @@
             editingId = id
             document.getElementById('modal-title').textContent = 'Edit Bottle'
             document.getElementById('name-input').value = bottle.name
-
             const text = bottle.ingredients.map(ing => 
                 ing.dose ? `${ing.name} ${ing.dose}` : ing.name
             ).join('\n')
-
             document.getElementById('ingredients-input').value = text
             document.getElementById('save-btn').textContent = 'Save Changes'
             document.getElementById('modal').classList.remove('hidden')
@@ -240,59 +295,129 @@
             }
         }
 
+        function sortBottles(arr) {
+            return [...arr].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+        }
+
         function computeOverlaps() {
             const map = new Map()
-
             bottles.forEach(bottle => {
                 bottle.ingredients.forEach(ing => {
                     const key = ing.name.toLowerCase().trim()
                     if (!map.has(key)) {
-                        map.set(key, {
-                            original: ing.name,
-                            count: 0,
-                            bottles: new Set(),
-                            doses: [],
-                            numerics: []
-                        })
+                        map.set(key, { original: ing.name, count: 0, bottles: new Set(), doses: [], numerics: [] })
                     }
                     const entry = map.get(key)
                     entry.count++
                     entry.bottles.add(bottle.name)
                     if (ing.dose) entry.doses.push(ing.dose)
-                    if (ing.numeric !== null && !isNaN(ing.numeric)) {
-                        entry.numerics.push(ing.numeric)
-                    }
+                    if (ing.numeric !== null && !isNaN(ing.numeric)) entry.numerics.push(ing.numeric)
                 })
             })
-
             return Array.from(map.values())
-                .filter(entry => entry.count > 1)
-                .sort((a, b) => b.count - a.count)
+                .filter(e => e.count > 1)
+                .sort((a, b) => b.count - a.count || a.original.localeCompare(b.original))
         }
 
         function calculateTotal(numerics) {
-            if (numerics.length === 0) return null
-            return numerics.reduce((sum, val) => sum + val, 0)
+            return numerics.length ? numerics.reduce((a, b) => a + b, 0) : null
         }
 
-        function renderSidebar() { /* unchanged - same as previous version */ 
+        function showLimitsModal() {
+            const container = document.getElementById('limits-list')
+            container.innerHTML = ''
+
+            Object.keys(upperLimits).sort().forEach(key => {
+                const entry = upperLimits[key]
+                const div = document.createElement('div')
+                div.className = "flex items-center gap-4 bg-slate-50 dark:bg-slate-700 p-4 rounded-2xl"
+                div.innerHTML = `
+                    <div class="flex-1">
+                        <input type="text" value="${key}" class="w-full bg-transparent font-medium outline-none" onchange="updateLimitKey('${key}', this.value)">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <input type="number" value="${entry.limit}" class="w-24 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-2xl text-center" onchange="updateLimitValue('${key}', this.value)">
+                        <input type="text" value="${entry.unit}" class="w-20 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-2xl text-center" onchange="updateLimitUnit('${key}', this.value)" placeholder="unit">
+                        <button onclick="removeLimit('${key}')" class="text-red-500 hover:text-red-600 p-2"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `
+                container.appendChild(div)
+            })
+            document.getElementById('limits-modal').classList.remove('hidden')
+        }
+
+        function updateLimitKey(oldKey, newKey) {
+            if (!newKey || oldKey === newKey.toLowerCase().trim()) return
+            const entry = upperLimits[oldKey]
+            delete upperLimits[oldKey]
+            upperLimits[newKey.toLowerCase().trim()] = entry
+            saveLimits()
+        }
+
+        function updateLimitValue(key, newValue) {
+            const num = parseFloat(newValue)
+            if (!isNaN(num) && num > 0) {
+                upperLimits[key].limit = num
+                saveLimits()
+            }
+        }
+
+        function updateLimitUnit(key, newUnit) {
+            if (newUnit && newUnit.trim()) {
+                upperLimits[key].unit = newUnit.trim()
+                saveLimits()
+            }
+        }
+
+        function removeLimit(key) {
+            if (confirm(`Remove limit for "${key}"?`)) {
+                delete upperLimits[key]
+                saveLimits()
+                showLimitsModal()
+            }
+        }
+
+        function addNewLimit() {
+            const name = prompt("Enter ingredient name:")
+            if (!name) return
+            const limit = parseFloat(prompt(`Upper daily limit for ${name}:`))
+            if (isNaN(limit) || limit <= 0) return alert("Please enter a valid positive number")
+            const unit = prompt("Unit (mg, mcg, IU, etc.):", "mg") || "mg"
+            upperLimits[name.toLowerCase().trim()] = {limit: limit, unit: unit.trim()}
+            saveLimits()
+            showLimitsModal()
+        }
+
+        function hideLimitsModal() {
+            document.getElementById('limits-modal').classList.add('hidden')
+            renderOverlaps()
+        }
+
+        function renderSidebar(searchTerm = '') {
             const container = document.getElementById('sidebar-bottles')
             const empty = document.getElementById('sidebar-empty')
-            if (bottles.length === 0) {
+            let filtered = bottles.filter(b => 
+                !searchTerm || b.name.toLowerCase().includes(searchTerm) || 
+                b.ingredients.some(i => i.name.toLowerCase().includes(searchTerm))
+            )
+
+            if (filtered.length === 0) {
                 container.innerHTML = ''
                 empty.classList.remove('hidden')
                 return
             }
             empty.classList.add('hidden')
+
+            const sorted = sortBottles(filtered)
             let html = ''
-            bottles.forEach(b => {
+            sorted.forEach(b => {
                 html += `
-                <div onclick="editBottle('${b.id}')" class="group flex justify-between items-center px-4 py-4 hover:bg-slate-50 rounded-3xl cursor-pointer">
+                <div onclick="editBottle('${b.id}')" class="group flex justify-between items-center px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-3xl cursor-pointer">
                     <div class="flex-1 min-w-0">
-                        <div class="font-medium text-slate-800 truncate">${b.name}</div>
-                        <div class="text-xs text-slate-500">${b.ingredients.length} ingredients</div>
+                        <div class="font-medium text-slate-800 dark:text-white truncate">${b.name}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">${b.ingredients.length} ingredients</div>
                     </div>
-                    <button onclick="event.stopImmediatePropagation(); deleteBottle('${b.id}');" class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <button onclick="event.stopImmediatePropagation(); deleteBottle('${b.id}');" class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>`
@@ -300,33 +425,34 @@
             container.innerHTML = html
         }
 
-        function renderBottlesGrid() {
+        function renderBottlesGrid(searchTerm = '') {
             const container = document.getElementById('bottles-grid')
             const overlaps = computeOverlaps()
             const overlappingNames = new Set(overlaps.map(o => o.original.toLowerCase()))
 
-            if (bottles.length === 0) {
-                container.innerHTML = `<div class="col-span-full bg-white border border-dashed rounded-3xl p-12 text-center">
-                    <i class="fa-solid fa-capsules text-7xl text-slate-200 mb-6"></i>
-                    <p class="text-xl font-medium text-slate-400">Your collection is empty</p>
-                    <button onclick="showAddModal()" class="mt-6 px-8 py-4 bg-emerald-600 text-white rounded-3xl flex items-center gap-x-2 mx-auto">
-                        <i class="fa-solid fa-plus"></i> Add your first bottle
-                    </button>
-                </div>`
+            let filtered = bottles.filter(b => 
+                !searchTerm || b.name.toLowerCase().includes(searchTerm) || 
+                b.ingredients.some(i => i.name.toLowerCase().includes(searchTerm))
+            )
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 dark:text-slate-500">No matching bottles found.</div>`
                 return
             }
 
+            const sorted = sortBottles(filtered)
             let html = ''
-            bottles.forEach(bottle => {
+            sorted.forEach(bottle => {
                 const ingHTML = bottle.ingredients.map(ing => {
                     const isOverlap = overlappingNames.has(ing.name.toLowerCase())
                     const doseHTML = ing.dose ? `<span class="dose">(${ing.dose})</span>` : ''
                     return `<span class="ingredient-tag ${isOverlap ? 'overlap-tag' : ''}">${ing.name}${doseHTML}</span>`
                 }).join('')
+
                 html += `
-                <div class="bg-white border border-slate-100 rounded-3xl p-6 hover:shadow-xl transition-all duration-200">
+                <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-3xl p-6 hover:shadow-xl transition-all">
                     <div class="flex justify-between items-start mb-5">
-                        <h3 class="font-semibold text-xl leading-tight">${bottle.name}</h3>
+                        <h3 class="font-semibold text-xl text-slate-900 dark:text-white">${bottle.name}</h3>
                         <div class="flex gap-x-3 text-slate-400">
                             <i onclick="event.stopImmediatePropagation(); editBottle('${bottle.id}')" class="fa-solid fa-pen cursor-pointer hover:text-emerald-500"></i>
                             <i onclick="event.stopImmediatePropagation(); deleteBottle('${bottle.id}')" class="fa-solid fa-trash-can cursor-pointer hover:text-red-500"></i>
@@ -342,15 +468,11 @@
             const container = document.getElementById('overlaps-grid')
             const overlaps = computeOverlaps()
 
-            document.getElementById('nav-overlap-count').innerHTML = `${overlaps.length} overlaps`
-            document.getElementById('overlap-summary').innerHTML = `${overlaps.length} ingredients appear in multiple bottles`
-
             if (overlaps.length === 0) {
                 container.innerHTML = `
-                <div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-3xl p-10 text-center">
+                <div class="col-span-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 rounded-3xl p-10 text-center">
                     <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-6"></i>
-                    <p class="text-2xl font-medium text-emerald-700">No overlaps detected!</p>
-                    <p class="text-emerald-600 mt-2">Your supplement routine looks safe.</p>
+                    <p class="text-2xl font-medium text-emerald-700 dark:text-emerald-300">No overlaps detected!</p>
                 </div>`
                 return
             }
@@ -359,50 +481,77 @@
             overlaps.forEach(item => {
                 const bottleList = Array.from(item.bottles).join(' • ')
                 const dosesList = item.doses.length ? item.doses.join(', ') : 'No dosage specified'
-                
                 const total = calculateTotal(item.numerics)
-                let totalHTML = ''
+
+                let warningClass = '', warningText = ''
                 if (total !== null) {
-                    // Get unit from the first dose that has one
-                    let unit = ''
-                    const unitMatch = item.doses[0] ? item.doses[0].match(/[a-zA-Zµμ%]+/i) : null
-                    if (unitMatch) unit = ' ' + unitMatch[0]
-                    totalHTML = `<p class="mt-3 text-sm total-dose">Total = ${total}${unit}</p>`
+                    const limit = getUpperLimit(item.original)
+                    const unit = getUpperUnit(item.original)
+                    if (limit) {
+                        const displayUnit = unit ? ` ${unit}` : ''
+                        if (total > limit) {
+                            warningClass = 'danger'
+                            warningText = `<p class="mt-2 text-xs font-medium text-red-600 dark:text-red-400">⚠️ Exceeds upper limit (${limit}${displayUnit})</p>`
+                        } else if (total > limit * 0.8) {
+                            warningClass = 'warning'
+                            warningText = `<p class="mt-2 text-xs font-medium text-amber-600">Approaching upper limit (${limit}${displayUnit})</p>`
+                        }
+                    }
                 }
 
                 html += `
-                <div class="bg-white border border-red-100 hover:border-red-300 rounded-3xl p-6 transition-colors">
+                <div class="bg-white dark:bg-slate-800 border border-red-100 dark:border-red-900 rounded-3xl p-6 transition-colors ${warningClass}">
                     <div class="flex items-baseline justify-between">
-                        <div class="font-semibold text-lg text-slate-900">${item.original}</div>
-                        <div class="px-4 py-1 text-sm font-semibold bg-red-100 text-red-700 rounded-3xl">${item.count}×</div>
+                        <div class="font-semibold text-lg text-slate-900 dark:text-white">${item.original}</div>
+                        <div class="px-4 py-1 text-sm font-semibold bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-3xl">${item.count}×</div>
                     </div>
-                    <p class="mt-4 text-xs uppercase tracking-widest text-slate-400">Appears in</p>
-                    <p class="text-slate-600 text-sm leading-tight mt-1">${bottleList}</p>
-                    
-                    <p class="mt-4 text-xs uppercase tracking-widest text-slate-400">Doses seen</p>
-                    <p class="text-slate-600 text-sm">${dosesList}</p>
-                    ${totalHTML}
+                    <p class="mt-4 text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500">Appears in</p>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">${bottleList}</p>
+                    <p class="mt-4 text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500">Doses seen</p>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm">${dosesList}</p>
+                    ${total !== null ? `<p class="mt-3 text-sm total-dose">Total = ${total}</p>` : ''}
+                    ${warningText}
                 </div>`
             })
             container.innerHTML = html
         }
 
-        function renderEverything() {
-            renderSidebar()
-            renderBottlesGrid()
+        function renderEverything(searchTerm = '') {
+            renderSidebar(searchTerm)
+            renderBottlesGrid(searchTerm)
             renderOverlaps()
-            document.getElementById('nav-bottle-count').innerHTML = `${bottles.length} bottles`
         }
 
-        // Export / Import / Clear functions (same as before)
+        function filterContent() {
+            const term = document.getElementById('search-input').value.toLowerCase().trim()
+            renderEverything(term)
+        }
+
         function exportData() {
-            if (bottles.length === 0) return alert("Nothing to export yet!")
+            if (bottles.length === 0) return alert("Nothing to export!")
             const dataStr = JSON.stringify(bottles, null, 2)
             const blob = new Blob([dataStr], { type: 'application/json' })
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
             a.download = `supplement-overlap-${new Date().toISOString().slice(0,10)}.json`
+            a.click()
+            URL.revokeObjectURL(url)
+        }
+
+        function exportCSV() {
+            if (bottles.length === 0) return alert("Nothing to export!")
+            let csv = "Bottle Name,Ingredient,Dose\n"
+            bottles.forEach(b => {
+                b.ingredients.forEach(ing => {
+                    csv += `"${b.name.replace(/"/g, '""')}","${ing.name.replace(/"/g, '""')}","${(ing.dose || '').replace(/"/g, '""')}"\n`
+                })
+            })
+            const blob = new Blob([csv], { type: 'text/csv' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `supplement-overlap-${new Date().toISOString().slice(0,10)}.csv`
             a.click()
             URL.revokeObjectURL(url)
         }
@@ -414,13 +563,12 @@
             reader.onload = function(ev) {
                 try {
                     const imported = JSON.parse(ev.target.result)
-                    if (!Array.isArray(imported)) throw new Error()
                     bottles = imported.filter(b => b.name && Array.isArray(b.ingredients))
                     saveData()
                     renderEverything()
-                    alert(`✅ Imported ${bottles.length} bottles!`)
+                    alert(`✅ Successfully imported ${bottles.length} bottles!`)
                 } catch (err) {
-                    alert('❌ Invalid file format.')
+                    alert('❌ Could not read this file. Make sure it is a valid Supplement Overlap backup.')
                 }
             }
             reader.readAsText(file)
@@ -435,27 +583,29 @@
             }
         }
 
-        function showTab(n) {
-            if (n === 1) document.querySelector('h2').scrollIntoView({ behavior: 'smooth' })
-            else document.getElementById('overlaps-grid').scrollIntoView({ behavior: 'smooth' })
+        function initTheme() {
+            const saved = localStorage.getItem('theme')
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark')
+                document.getElementById('theme-icon').textContent = '🌗'
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark')
+            document.getElementById('theme-icon').textContent = isDark ? '🌗' : '☀️'
+            localStorage.setItem('theme', isDark ? 'dark' : 'light')
         }
 
         window.onload = () => {
+            initTheme()
             loadData()
+            renderEverything()
 
-            // Demo data with your example
             window.loadDemoData = function() {
                 bottles = [
-                    { 
-                        id: "d1", 
-                        name: "Vitamin D", 
-                        ingredients: [{name: "Vitamin D", dose: "100 mcg", numeric: 100}]
-                    },
-                    { 
-                        id: "d2", 
-                        name: "Multivitamin", 
-                        ingredients: [{name: "Vitamin D", dose: "300 mcg", numeric: 300}]
-                    }
+                    { id: "d1", name: "Amino Acid Synergy", ingredients: [{name: "Vitamin B6", dose: "14 mg", numeric: 14}] },
+                    { id: "d2", name: "Memory Ease", ingredients: [{name: "Vitamin B6", dose: "40 mg", numeric: 40}] }
                 ]
                 saveData()
                 renderEverything()
