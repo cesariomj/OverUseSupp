@@ -7,16 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
+        
         .ingredient-tag {
             display: inline-flex;
             align-items: center;
             background: #f1f5f9;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 9999px;
             font-size: 0.875rem;
-            margin: 2px;
+            margin: 3px;
             transition: all 0.2s;
         }
         .overlap-tag {
@@ -24,29 +25,24 @@
             color: #b91c1c;
             border: 1px solid #fecaca;
         }
-        .modal {
-            animation: fadeIn 0.2s ease;
-        }
+        .modal { animation: fadeIn 0.2s ease; }
+        .dose { font-size: 0.8rem; color: #64748b; margin-left: 6px; }
+        .total-dose { font-weight: 600; color: #b91c1c; }
     </style>
 </head>
 <body class="bg-slate-50">
     <div class="max-w-7xl mx-auto min-h-screen flex flex-col">
-        
-        <!-- Top Navbar -->
+        <!-- Navbar (unchanged) -->
         <nav class="bg-white border-b sticky top-0 z-50 shadow-sm">
             <div class="px-8 py-5 flex items-center justify-between">
                 <div class="flex items-center gap-x-3">
-                    <div class="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl">
-                        💊
-                    </div>
+                    <div class="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl">💊</div>
                     <div>
                         <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Supplement Overlap</h1>
-                        <p class="text-xs text-emerald-600 -mt-1">See duplicates • Avoid over-supplementing</p>
+                        <p class="text-xs text-emerald-600 -mt-1">Track ingredients + dosages • Avoid over-supplementing</p>
                     </div>
                 </div>
-                
                 <div class="flex items-center gap-x-3">
-                    <!-- Quick stats -->
                     <div onclick="showTab(1)" class="hidden md:flex items-center gap-x-2 px-4 py-2 bg-white border rounded-3xl text-sm font-medium cursor-pointer hover:bg-slate-50">
                         <i class="fa-solid fa-capsules text-emerald-500"></i>
                         <span id="nav-bottle-count">0 bottles</span>
@@ -56,21 +52,15 @@
                         <span id="nav-overlap-count">0 overlaps</span>
                     </div>
                     
-                    <button onclick="exportData()" 
-                            class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border transition-colors">
-                        <i class="fa-solid fa-download"></i>
-                        <span class="hidden sm:inline">Export JSON</span>
+                    <button onclick="exportData()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border transition-colors">
+                        <i class="fa-solid fa-download"></i><span class="hidden sm:inline">Export</span>
                     </button>
-                    
-                    <label onclick="document.getElementById('import-input').click()"
-                           class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border transition-colors cursor-pointer">
-                        <i class="fa-solid fa-upload"></i>
-                        <span class="hidden sm:inline">Import JSON</span>
+                    <label onclick="document.getElementById('import-input').click()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-3xl border transition-colors cursor-pointer">
+                        <i class="fa-solid fa-upload"></i><span class="hidden sm:inline">Import</span>
                     </label>
                     <input type="file" id="import-input" accept=".json" class="hidden" onchange="importData(event)">
                     
-                    <button onclick="clearAllData()" 
-                            class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-3xl border border-red-200 transition-colors">
+                    <button onclick="clearAllData()" class="flex items-center gap-x-2 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-3xl border border-red-200 transition-colors">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -78,34 +68,24 @@
         </nav>
 
         <div class="flex flex-1 overflow-hidden">
-            
-            <!-- Sidebar: My Bottles -->
+            <!-- Sidebar -->
             <div class="w-80 bg-white border-r flex flex-col">
                 <div class="p-6 border-b flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-slate-800">My Bottles</h2>
-                    <button onclick="showAddModal()" 
-                            class="w-9 h-9 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center justify-center text-xl transition-colors">
+                    <button onclick="showAddModal()" class="w-9 h-9 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center justify-center text-xl transition-colors">
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
-                
                 <div id="sidebar-bottles" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
-                
                 <div id="sidebar-empty" class="flex-1 flex flex-col items-center justify-center text-center px-8 hidden">
                     <i class="fa-solid fa-capsules text-6xl text-slate-300 mb-6"></i>
                     <p class="text-slate-500 font-medium">No supplements yet</p>
-                    <p class="text-sm text-slate-400 mt-1">Add your first bottle to start tracking overlaps</p>
-                    <button onclick="showAddModal()" 
-                            class="mt-6 px-6 py-3 bg-emerald-600 text-white rounded-3xl text-sm font-medium">
-                        + Add First Bottle
-                    </button>
+                    <button onclick="showAddModal()" class="mt-6 px-6 py-3 bg-emerald-600 text-white rounded-3xl text-sm font-medium">+ Add First Bottle</button>
                 </div>
             </div>
             
-            <!-- Main Content Area -->
+            <!-- Main Content -->
             <div class="flex-1 p-8 overflow-y-auto">
-                
-                <!-- Overlap Analysis -->
                 <div class="mb-12">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl font-semibold flex items-center gap-x-3">
@@ -114,98 +94,58 @@
                         </h2>
                         <span id="overlap-summary" class="text-sm font-medium bg-amber-100 text-amber-700 px-4 py-1 rounded-3xl"></span>
                     </div>
-                    
                     <div id="overlaps-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
                 </div>
-                
-                <!-- All Bottles Grid -->
+
                 <h2 class="text-2xl font-semibold mb-6 flex items-center gap-x-3">
-                    <i class="fa-solid fa-list-check"></i>
-                    Your Collection
+                    <i class="fa-solid fa-list-check"></i> Your Collection
                 </h2>
                 <div id="bottles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
         </div>
     </div>
 
-    <!-- Add / Edit Modal -->
+    <!-- Modal -->
     <div id="modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-        <div class="modal bg-white rounded-3xl max-w-lg w-full mx-4 shadow-2xl">
+        <div class="modal bg-white rounded-3xl max-w-lg w-full mx-4 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div class="px-8 pt-8 pb-6">
                 <h3 id="modal-title" class="text-2xl font-semibold text-slate-900">Add New Supplement Bottle</h3>
-                
                 <div class="mt-8 space-y-8">
-                    <!-- Name -->
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-2">Bottle / Product Name</label>
-                        <input id="name-input" type="text" 
-                               class="w-full px-5 py-4 border border-slate-200 focus:border-emerald-400 rounded-3xl text-lg outline-none"
-                               placeholder="e.g. Nature Made Vitamin D3">
+                        <input id="name-input" type="text" class="w-full px-5 py-4 border border-slate-200 focus:border-emerald-400 rounded-3xl text-lg outline-none" placeholder="e.g. Nature Made Vitamin D3">
                     </div>
-                    
-                    <!-- Ingredients -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-2">Ingredients (one per line)</label>
-                        <textarea id="ingredients-input" rows="9"
-                                  class="w-full px-5 py-4 border border-slate-200 focus:border-emerald-400 rounded-3xl resize-none outline-none font-light"
-                                  placeholder="Vitamin D3&#10;Magnesium&#10;Zinc Citrate&#10;..."></textarea>
+                        <label class="block text-sm font-medium text-slate-600 mb-2">Ingredients & Dosage (one per line)</label>
+                        <textarea id="ingredients-input" rows="10" class="w-full px-5 py-4 border border-slate-200 focus:border-emerald-400 rounded-3xl resize-none outline-none font-light" placeholder="Vitamin D 100 mcg&#10;Vitamin D 300 mcg&#10;Magnesium 400 mg"></textarea>
                         <p class="mt-3 text-xs text-slate-400 flex items-center gap-x-1">
                             <i class="fa-solid fa-lightbulb"></i>
-                            Tip: Use consistent names (e.g. always “Vitamin C”)
+                            Examples: "Vitamin D 100 mcg" or "Magnesium Glycinate 400 mg"
                         </p>
                     </div>
                 </div>
             </div>
-            
-            <div class="border-t px-8 py-6 flex gap-4">
-                <button onclick="hideModal()" 
-                        class="flex-1 py-4 text-slate-600 font-medium rounded-3xl hover:bg-slate-100 transition-colors">
-                    Cancel
-                </button>
-                <button onclick="saveBottle()" id="save-btn"
-                        class="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-3xl transition-colors">
-                    Save Bottle
-                </button>
+            <div class="border-t px-8 py-6 flex gap-4 mt-auto">
+                <button onclick="hideModal()" class="flex-1 py-4 text-slate-600 font-medium rounded-3xl hover:bg-slate-100 transition-colors">Cancel</button>
+                <button onclick="saveBottle()" id="save-btn" class="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-3xl transition-colors">Save Bottle</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Tailwind CDN initialization
-        function initTailwind() {
-            return {
-                config(userConfig = {}) {
-                    return {
-                        content: [],
-                        theme: { extend: {} },
-                        plugins: [],
-                        ...userConfig,
-                    }
-                },
-                theme: { extend: {} },
-            }
-        }
-        
         let bottles = []
         let editingId = null
-        const STORAGE_KEY = 'supplement-overlap-data'
+        const STORAGE_KEY = 'supplement-overlap-data-v3'  // bumped version
 
-        // Load from browser cache (localStorage)
         function loadData() {
             const saved = localStorage.getItem(STORAGE_KEY)
             bottles = saved ? JSON.parse(saved) : []
             renderEverything()
         }
 
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(bottles))
-        }
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(bottles)) }
+        function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2) }
 
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).slice(2)
-        }
-
-        // Modal controls
         function showAddModal() {
             editingId = null
             document.getElementById('modal-title').textContent = 'Add New Supplement Bottle'
@@ -221,42 +161,56 @@
             editingId = null
         }
 
-        // Save (add or edit)
+        // Improved parsing - more reliable numeric extraction
+        function parseIngredientLine(line) {
+            const trimmed = line.trim()
+            if (!trimmed) return null
+
+            // Extract the first number found in the string
+            const numMatch = trimmed.match(/[\d.,]+/)
+            let numeric = null
+            if (numMatch) {
+                numeric = parseFloat(numMatch[0].replace(/,/g, ''))
+            }
+
+            // Try to separate name and dose
+            const doseMatch = trimmed.match(/^(.+?)\s+([\d.,]+)\s*([a-zA-Zµμ%].*)?$/i)
+            if (doseMatch) {
+                return {
+                    name: doseMatch[1].trim(),
+                    dose: `${doseMatch[2]}${doseMatch[3] ? ' ' + doseMatch[3].trim() : ''}`,
+                    numeric: numeric
+                }
+            }
+
+            return {
+                name: trimmed,
+                dose: null,
+                numeric: numeric
+            }
+        }
+
         function saveBottle() {
             const name = document.getElementById('name-input').value.trim()
-            let ingredientsText = document.getElementById('ingredients-input').value
-            
-            if (!name) {
-                alert('Please enter a bottle name')
-                return
-            }
-            
-            const ingredients = ingredientsText
-                .split('\n')
-                .map(i => i.trim())
-                .filter(i => i.length > 0)
-            
-            if (ingredients.length === 0) {
-                alert('Please add at least one ingredient')
-                return
-            }
-            
+            const text = document.getElementById('ingredients-input').value
+
+            if (!name) return alert('Please enter a bottle name')
+
+            const lines = text.split('\n')
+            const ingredients = lines.map(parseIngredientLine).filter(i => i)
+
+            if (ingredients.length === 0) return alert('Please add at least one ingredient')
+
             if (editingId) {
-                // Update existing
                 const bottle = bottles.find(b => b.id === editingId)
                 if (bottle) {
                     bottle.name = name
                     bottle.ingredients = ingredients
                 }
             } else {
-                // Create new
-                bottles.push({
-                    id: generateId(),
-                    name: name,
-                    ingredients: ingredients
-                })
+                bottles.push({ id: generateId(), name: name, ingredients: ingredients })
             }
-            
+
             saveData()
             hideModal()
             renderEverything()
@@ -265,61 +219,71 @@
         function editBottle(id) {
             const bottle = bottles.find(b => b.id === id)
             if (!bottle) return
-            
             editingId = id
             document.getElementById('modal-title').textContent = 'Edit Bottle'
             document.getElementById('name-input').value = bottle.name
-            document.getElementById('ingredients-input').value = bottle.ingredients.join('\n')
+
+            const text = bottle.ingredients.map(ing => 
+                ing.dose ? `${ing.name} ${ing.dose}` : ing.name
+            ).join('\n')
+
+            document.getElementById('ingredients-input').value = text
             document.getElementById('save-btn').textContent = 'Save Changes'
             document.getElementById('modal').classList.remove('hidden')
         }
 
         function deleteBottle(id) {
-            if (confirm('Delete this bottle and all its ingredients?')) {
+            if (confirm('Delete this bottle?')) {
                 bottles = bottles.filter(b => b.id !== id)
                 saveData()
                 renderEverything()
             }
         }
 
-        // Compute overlaps (case-insensitive)
         function computeOverlaps() {
-            const map = new Map() // key = lowercased ingredient → {original, count, bottles}
-            
+            const map = new Map()
+
             bottles.forEach(bottle => {
                 bottle.ingredients.forEach(ing => {
-                    const key = ing.toLowerCase().trim()
+                    const key = ing.name.toLowerCase().trim()
                     if (!map.has(key)) {
                         map.set(key, {
-                            original: ing,
+                            original: ing.name,
                             count: 0,
-                            bottles: new Set()
+                            bottles: new Set(),
+                            doses: [],
+                            numerics: []
                         })
                     }
                     const entry = map.get(key)
                     entry.count++
                     entry.bottles.add(bottle.name)
+                    if (ing.dose) entry.doses.push(ing.dose)
+                    if (ing.numeric !== null && !isNaN(ing.numeric)) {
+                        entry.numerics.push(ing.numeric)
+                    }
                 })
             })
-            
+
             return Array.from(map.values())
                 .filter(entry => entry.count > 1)
                 .sort((a, b) => b.count - a.count)
         }
 
-        // Render sidebar bottle list
-        function renderSidebar() {
+        function calculateTotal(numerics) {
+            if (numerics.length === 0) return null
+            return numerics.reduce((sum, val) => sum + val, 0)
+        }
+
+        function renderSidebar() { /* unchanged - same as previous version */ 
             const container = document.getElementById('sidebar-bottles')
             const empty = document.getElementById('sidebar-empty')
-            
             if (bottles.length === 0) {
                 container.innerHTML = ''
                 empty.classList.remove('hidden')
                 return
             }
-            
             empty.classList.add('hidden')
-            
             let html = ''
             bottles.forEach(b => {
                 html += `
@@ -328,8 +292,7 @@
                         <div class="font-medium text-slate-800 truncate">${b.name}</div>
                         <div class="text-xs text-slate-500">${b.ingredients.length} ingredients</div>
                     </div>
-                    <button onclick="event.stopImmediatePropagation(); deleteBottle('${b.id}');" 
-                            class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <button onclick="event.stopImmediatePropagation(); deleteBottle('${b.id}');" class="text-red-400 hover:text-red-600 p-2 opacity-0 group-hover:opacity-100 transition-all">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>`
@@ -337,17 +300,13 @@
             container.innerHTML = html
         }
 
-        // Render main bottles grid (with overlap highlighting)
         function renderBottlesGrid() {
             const container = document.getElementById('bottles-grid')
             const overlaps = computeOverlaps()
-            const overlappingIngredients = new Set(
-                overlaps.flatMap(o => Array.from(o.bottles).flatMap(() => o.original.toLowerCase()))
-            )
-            
+            const overlappingNames = new Set(overlaps.map(o => o.original.toLowerCase()))
+
             if (bottles.length === 0) {
-                container.innerHTML = `
-                <div class="col-span-full bg-white border border-dashed rounded-3xl p-12 text-center">
+                container.innerHTML = `<div class="col-span-full bg-white border border-dashed rounded-3xl p-12 text-center">
                     <i class="fa-solid fa-capsules text-7xl text-slate-200 mb-6"></i>
                     <p class="text-xl font-medium text-slate-400">Your collection is empty</p>
                     <button onclick="showAddModal()" class="mt-6 px-8 py-4 bg-emerald-600 text-white rounded-3xl flex items-center gap-x-2 mx-auto">
@@ -356,14 +315,14 @@
                 </div>`
                 return
             }
-            
+
             let html = ''
             bottles.forEach(bottle => {
                 const ingHTML = bottle.ingredients.map(ing => {
-                    const isOverlap = overlappingIngredients.has(ing.toLowerCase())
-                    return `<span class="ingredient-tag ${isOverlap ? 'overlap-tag' : ''}">${ing}</span>`
+                    const isOverlap = overlappingNames.has(ing.name.toLowerCase())
+                    const doseHTML = ing.dose ? `<span class="dose">(${ing.dose})</span>` : ''
+                    return `<span class="ingredient-tag ${isOverlap ? 'overlap-tag' : ''}">${ing.name}${doseHTML}</span>`
                 }).join('')
-                
                 html += `
                 <div class="bg-white border border-slate-100 rounded-3xl p-6 hover:shadow-xl transition-all duration-200">
                     <div class="flex justify-between items-start mb-5">
@@ -373,36 +332,44 @@
                             <i onclick="event.stopImmediatePropagation(); deleteBottle('${bottle.id}')" class="fa-solid fa-trash-can cursor-pointer hover:text-red-500"></i>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-x-2 gap-y-1">
-                        ${ingHTML}
-                    </div>
+                    <div class="flex flex-wrap gap-x-2 gap-y-1">${ingHTML}</div>
                 </div>`
             })
             container.innerHTML = html
         }
 
-        // Render overlaps section
         function renderOverlaps() {
             const container = document.getElementById('overlaps-grid')
             const overlaps = computeOverlaps()
-            
-            // Update top nav badge
+
             document.getElementById('nav-overlap-count').innerHTML = `${overlaps.length} overlaps`
             document.getElementById('overlap-summary').innerHTML = `${overlaps.length} ingredients appear in multiple bottles`
-            
+
             if (overlaps.length === 0) {
                 container.innerHTML = `
                 <div class="col-span-full bg-emerald-50 border border-emerald-200 rounded-3xl p-10 text-center">
                     <i class="fa-solid fa-circle-check text-6xl text-emerald-500 mb-6"></i>
                     <p class="text-2xl font-medium text-emerald-700">No overlaps detected!</p>
-                    <p class="text-emerald-600 mt-2">Great job — your supplement routine has no duplicate ingredients.</p>
+                    <p class="text-emerald-600 mt-2">Your supplement routine looks safe.</p>
                 </div>`
                 return
             }
-            
+
             let html = ''
             overlaps.forEach(item => {
                 const bottleList = Array.from(item.bottles).join(' • ')
+                const dosesList = item.doses.length ? item.doses.join(', ') : 'No dosage specified'
+                
+                const total = calculateTotal(item.numerics)
+                let totalHTML = ''
+                if (total !== null) {
+                    // Get unit from the first dose that has one
+                    let unit = ''
+                    const unitMatch = item.doses[0] ? item.doses[0].match(/[a-zA-Zµμ%]+/i) : null
+                    if (unitMatch) unit = ' ' + unitMatch[0]
+                    totalHTML = `<p class="mt-3 text-sm total-dose">Total = ${total}${unit}</p>`
+                }
+
                 html += `
                 <div class="bg-white border border-red-100 hover:border-red-300 rounded-3xl p-6 transition-colors">
                     <div class="flex items-baseline justify-between">
@@ -411,6 +378,10 @@
                     </div>
                     <p class="mt-4 text-xs uppercase tracking-widest text-slate-400">Appears in</p>
                     <p class="text-slate-600 text-sm leading-tight mt-1">${bottleList}</p>
+                    
+                    <p class="mt-4 text-xs uppercase tracking-widest text-slate-400">Doses seen</p>
+                    <p class="text-slate-600 text-sm">${dosesList}</p>
+                    ${totalHTML}
                 </div>`
             })
             container.innerHTML = html
@@ -420,88 +391,75 @@
             renderSidebar()
             renderBottlesGrid()
             renderOverlaps()
-            // Update bottle count in nav
             document.getElementById('nav-bottle-count').innerHTML = `${bottles.length} bottles`
         }
 
-        // Export JSON to file
+        // Export / Import / Clear functions (same as before)
         function exportData() {
-            if (bottles.length === 0) {
-                alert("Nothing to export yet!")
-                return
-            }
+            if (bottles.length === 0) return alert("Nothing to export yet!")
             const dataStr = JSON.stringify(bottles, null, 2)
             const blob = new Blob([dataStr], { type: 'application/json' })
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `supplement-overlap-backup-${new Date().toISOString().slice(0,10)}.json`
+            a.download = `supplement-overlap-${new Date().toISOString().slice(0,10)}.json`
             a.click()
             URL.revokeObjectURL(url)
         }
 
-        // Import JSON from file
         function importData(e) {
             const file = e.target.files[0]
             if (!file) return
-            
             const reader = new FileReader()
             reader.onload = function(ev) {
                 try {
                     const imported = JSON.parse(ev.target.result)
-                    if (!Array.isArray(imported)) throw new Error("Not a valid backup")
-                    
-                    // Basic validation
-                    bottles = imported.filter(b => 
-                        b.name && Array.isArray(b.ingredients)
-                    )
+                    if (!Array.isArray(imported)) throw new Error()
+                    bottles = imported.filter(b => b.name && Array.isArray(b.ingredients))
                     saveData()
                     renderEverything()
-                    alert(`✅ Successfully imported ${bottles.length} bottles!`)
+                    alert(`✅ Imported ${bottles.length} bottles!`)
                 } catch (err) {
-                    alert('❌ Could not read this file. Make sure it is a valid Supplement Overlap backup.')
+                    alert('❌ Invalid file format.')
                 }
             }
             reader.readAsText(file)
-            // Clear input so same file can be re-selected
             e.target.value = ''
         }
 
-        // Clear everything
         function clearAllData() {
-            if (confirm('🗑️ Delete ALL bottles and ingredients permanently?\n\nThis cannot be undone.')) {
+            if (confirm('Delete ALL data permanently?')) {
                 bottles = []
                 saveData()
                 renderEverything()
             }
         }
 
-        // Tab simulation (just for the nav pills)
         function showTab(n) {
-            // Simple scroll-to-section
             if (n === 1) document.querySelector('h2').scrollIntoView({ behavior: 'smooth' })
-            else document.querySelector('.text-2xl').scrollIntoView({ behavior: 'smooth' })
+            else document.getElementById('overlaps-grid').scrollIntoView({ behavior: 'smooth' })
         }
 
-        // Boot the app
         window.onload = () => {
-            initTailwind()
             loadData()
-            
-            // Keyboard shortcut: press "?" for help (demo data)
-            console.log('%c✅ Supplement Overlap app ready! Press "?" in console for a quick demo.', 'color:#10b981; font-weight:600')
-        }
-        
-        // Bonus: load sample data from console if wanted
-        window.loadDemoData = function() {
-            bottles = [
-                { id: "demo1", name: "Nature Made Vitamin D3", ingredients: ["Vitamin D3", "Calcium"] },
-                { id: "demo2", name: "Magnesium Glycinate 400mg", ingredients: ["Magnesium Glycinate", "Vitamin D3"] },
-                { id: "demo3", name: "Daily Multivitamin", ingredients: ["Vitamin C", "Zinc", "Magnesium Glycinate"] }
-            ]
-            saveData()
-            renderEverything()
-            console.log('🎉 Demo data loaded!')
+
+            // Demo data with your example
+            window.loadDemoData = function() {
+                bottles = [
+                    { 
+                        id: "d1", 
+                        name: "Vitamin D", 
+                        ingredients: [{name: "Vitamin D", dose: "100 mcg", numeric: 100}]
+                    },
+                    { 
+                        id: "d2", 
+                        name: "Multivitamin", 
+                        ingredients: [{name: "Vitamin D", dose: "300 mcg", numeric: 300}]
+                    }
+                ]
+                saveData()
+                renderEverything()
+            }
         }
     </script>
 </body>
